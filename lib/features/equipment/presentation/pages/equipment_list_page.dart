@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../bloc/equipment_bloc.dart';
-import '../bloc/equipment_event.dart';
-import '../bloc/equipment_state.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_bloc.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_event.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_state.dart';
 
 class EquipmentListPage extends StatefulWidget {
   const EquipmentListPage({super.key});
@@ -19,7 +19,6 @@ class _EquipmentListPageState extends State<EquipmentListPage> {
     context.read<EquipmentBloc>().add(const LoadEquipmentList());
   }
 
-  // Icon mapping for common equipment types
   IconData _iconForEquipment(String equipment) {
     return switch (equipment.toLowerCase()) {
       'barbell' => Icons.fitness_center,
@@ -64,7 +63,9 @@ class _EquipmentListPageState extends State<EquipmentListPage> {
                   onTap: () => context.push('/equipment/$equipment'),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(

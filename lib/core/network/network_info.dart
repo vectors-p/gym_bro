@@ -1,7 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-// Add to pubspec: connectivity_plus: ^6.0.3
-
 abstract class NetworkInfo {
   Future<bool> get isConnected;
 }

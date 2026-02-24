@@ -11,96 +11,128 @@ class HomePage extends StatelessWidget {
     final bodyParts = AppConstants.bodyPartMeta.entries.toList();
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/workouts'),
+        icon: const Icon(Icons.fitness_center),
+        label: const Text('My Workouts'),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: CustomScrollView(
         slivers: [
+          // ── Compact pinned app bar ──────────────────────
           SliverAppBar(
-            expandedHeight: 140,
-            floating: true,
             pinned: true,
+            floating: false,
+            expandedHeight: 0,
+            toolbarHeight: 64,
+            backgroundColor: const Color(0xFF0A0A0A),
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'GymApp 💪',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFBF360C), Color(0xFFE64A19)],
+              titlePadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Logo mark
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFBF360C), Color(0xFFFF4500)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'GymBro',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.8,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.search),
+                icon: const Icon(Icons.search, color: Colors.white),
                 onPressed: () => context.push('/search'),
               ),
-              IconButton(
-                icon: const Icon(Icons.fitness_center),
-                tooltip: 'My Workouts',
-                onPressed: () => context.push('/workouts'),
-              ),
+              const SizedBox(width: 4),
             ],
           ),
 
-          // Quick-access row
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: EdgeInsets.fromLTRB(16, 24, 16, 10),
+              child: Text(
+                'BROWSE BY',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 children: [
-                  const Text(
-                    'Browse By',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
+                  _BrowseButton(
+                    label: 'Equipment',
+                    icon: Icons.sports_gymnastics,
+                    onTap: () => context.push('/equipment'),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _QuickChip(
-                        label: 'Equipment',
-                        icon: Icons.sports_gymnastics,
-                        onTap: () => context.push('/equipment'),
-                      ),
-                      const SizedBox(width: 8),
-                      _QuickChip(
-                        label: 'Target Muscle',
-                        icon: Icons.accessibility_new,
-                        onTap: () => context.push('/target-muscle'),
-                      ),
-                      const SizedBox(width: 8),
-                      _QuickChip(
-                        label: 'All Exercises',
-                        icon: Icons.list,
-                        onTap: () => context.push('/exercises'),
-                      ),
-                    ],
+                  const SizedBox(width: 10),
+                  _BrowseButton(
+                    label: 'Target Muscle',
+                    icon: Icons.accessibility_new,
+                    onTap: () => context.push('/target-muscle'),
+                  ),
+                  const SizedBox(width: 10),
+                  _BrowseButton(
+                    label: 'All Exercises',
+                    icon: Icons.list_alt,
+                    onTap: () => context.push('/exercises'),
                   ),
                 ],
               ),
             ),
           ),
 
-          // Section header
+          // ── Body Parts header ───────────────────────────
           const SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: EdgeInsets.fromLTRB(16, 24, 16, 10),
               child: Text(
-                'Body Parts',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'BODY PARTS',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: Colors.grey,
+                ),
               ),
             ),
           ),
 
-          // Body part grid
+          // ── Body part grid ──────────────────────────────
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -124,12 +156,12 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _QuickChip extends StatelessWidget {
+class _BrowseButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
 
-  const _QuickChip({
+  const _BrowseButton({
     required this.label,
     required this.icon,
     required this.onTap,
@@ -137,10 +169,31 @@ class _QuickChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      onPressed: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF2A2A2A)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: const Color(0xFFFF4500)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

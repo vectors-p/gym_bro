@@ -17,19 +17,22 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   late final TextEditingController _controller;
+  late final SearchBloc _searchBloc; // ← declare the field
 
   @override
   void initState() {
     super.initState();
+    _searchBloc = context.read<SearchBloc>(); // ← now this works
     _controller = TextEditingController(text: widget.initialQuery);
     if (widget.initialQuery.isNotEmpty) {
-      context.read<SearchBloc>().add(SearchQueryChanged(widget.initialQuery));
+      _searchBloc.add(SearchQueryChanged(widget.initialQuery));
     }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _searchBloc.add(const SearchCleared());
     super.dispose();
   }
 
@@ -48,12 +51,12 @@ class _SearchPageState extends State<SearchPage> {
               icon: const Icon(Icons.clear),
               onPressed: () {
                 _controller.clear();
-                context.read<SearchBloc>().add(const SearchCleared());
+                _searchBloc.add(const SearchCleared());
               },
             ),
           ),
           onChanged: (query) {
-            context.read<SearchBloc>().add(SearchQueryChanged(query));
+            _searchBloc.add(SearchQueryChanged(query));
           },
         ),
       ),
@@ -119,7 +122,23 @@ class _SearchPageState extends State<SearchPage> {
             );
           }
           if (state is SearchError) {
-            return Center(child: Text('Error: ${state.message}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
+                  const SizedBox(height: 12),
+                  const Text('Search unavailable, try again'),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        _searchBloc.add(SearchQueryChanged(_controller.text)),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
           return const SizedBox.shrink();
         },

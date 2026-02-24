@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/exercise.dart';
+import 'package:gym_bro/features/exercises/domain/entities/exercise.dart';
 
 class ExerciseCard extends StatelessWidget {
   final Exercise exercise;
@@ -26,7 +26,7 @@ class ExerciseCard extends StatelessWidget {
               placeholder: (_, __) => Container(
                 width: 90,
                 height: 90,
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
@@ -34,7 +34,7 @@ class ExerciseCard extends StatelessWidget {
               errorWidget: (_, __, ___) => Container(
                 width: 90,
                 height: 90,
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Icon(Icons.fitness_center, size: 36),
               ),
             ),

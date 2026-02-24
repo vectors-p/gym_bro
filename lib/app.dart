@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 import 'features/exercises/presentation/bloc/exercise_bloc.dart';
 import 'features/body_parts/presentation/bloc/body_part_bloc.dart';
 import 'features/equipment/presentation/bloc/equipment_bloc.dart';
@@ -26,19 +27,7 @@ class GymApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Gym App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepOrange,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
+        theme: AppTheme.darkTheme,
         routerConfig: AppRouter.router,
       ),
     );

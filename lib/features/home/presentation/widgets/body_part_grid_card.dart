@@ -26,44 +26,82 @@ class BodyPartGridCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [meta.color, meta.color.withOpacity(0.7)],
+              colors: [meta.color, meta.gradientEnd],
             ),
             boxShadow: [
               BoxShadow(
-                color: meta.color.withOpacity(0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                color: meta.color.withValues(alpha: .35),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Stack(
             children: [
-              // Background icon (decorative)
               Positioned(
-                right: -10,
-                bottom: -10,
+                right: -12,
+                top: -12,
                 child: Icon(
                   meta.icon,
-                  size: 80,
-                  color: Colors.white.withOpacity(0.15),
+                  size: 90,
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
+
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: .25),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(meta.icon, color: Colors.white, size: 28),
-                    const SizedBox(height: 8),
-                    Text(
-                      meta.label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: .2),
+                          width: 1,
+                        ),
                       ),
+                      child: Icon(meta.icon, color: Colors.white, size: 22),
+                    ),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          meta.label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                            shadows: [
+                              Shadow(color: Colors.black38, blurRadius: 4),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

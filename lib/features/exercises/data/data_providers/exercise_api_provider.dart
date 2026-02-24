@@ -9,7 +9,6 @@ class ExerciseApiProvider {
 
   ExerciseApiProvider({required ApiClient apiClient}) : _apiClient = apiClient;
 
-  /// GET /exercises?limit=&offset=
   Future<List<ExerciseModel>> getAllExercises({
     int limit = 10,
     int offset = 0,
@@ -40,11 +39,21 @@ class ExerciseApiProvider {
   }
 
   /// GET /exercises/search?q={name}
-  Future<List<ExerciseModel>> searchExercisesByName(String name) async {
+  Future<List<ExerciseModel>> searchExercisesByName(
+    String name, {
+    int limit = 60,
+    int offset = 0,
+    double threshold = 0.4,
+  }) async {
     try {
       final response = await _apiClient.dio.get(
         ApiConstants.exercisesSearch,
-        queryParameters: {'q': name},
+        queryParameters: {
+          'q': name,
+          'limit': limit,
+          'offset': offset,
+          'threshold': threshold,
+        },
       );
       final data = response.data['data'] as List;
       return data.map((json) => ExerciseModel.fromJson(json)).toList();

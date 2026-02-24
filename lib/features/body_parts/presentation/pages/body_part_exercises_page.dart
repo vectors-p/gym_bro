@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_bro/core/constatnts/app_constants.dart';
-import '../bloc/body_part_bloc.dart';
-import '../bloc/body_part_event.dart';
-import '../bloc/body_part_state.dart';
-import '../../../exercises/presentation/widgets/exercise_card.dart';
+import 'package:gym_bro/features/body_parts/presentation/bloc/body_part_bloc.dart';
+import 'package:gym_bro/features/body_parts/presentation/bloc/body_part_event.dart';
+import 'package:gym_bro/features/body_parts/presentation/bloc/body_part_state.dart';
+import 'package:gym_bro/features/exercises/presentation/widgets/exercise_card.dart';
 
 class BodyPartExercisesPage extends StatefulWidget {
   final String bodyPart;
@@ -26,39 +26,94 @@ class _BodyPartExercisesPageState extends State<BodyPartExercisesPage> {
   @override
   Widget build(BuildContext context) {
     final meta = AppConstants.bodyPartMeta[widget.bodyPart];
+    final color = meta?.color ?? const Color(0xFFFF4500);
+    final gradientEnd = meta?.gradientEnd ?? const Color(0xFFBF360C);
+    final label = meta?.label ?? widget.bodyPart;
+    final icon = meta?.icon ?? Icons.fitness_center;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 160,
             pinned: true,
+            floating: false,
+            expandedHeight: 160,
+            backgroundColor: const Color(0xFF0A0A0A),
+            iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                meta?.label ?? widget.bodyPart,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              titlePadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color, gradientEnd],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      meta?.color ?? Colors.deepOrange,
-                      (meta?.color ?? Colors.deepOrange).withOpacity(0.6),
-                    ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Gradient background using the body part color
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withValues(alpha: .35),
+                          const Color(0xFF0A0A0A),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Icon(
-                    meta?.icon ?? Icons.fitness_center,
-                    size: 80,
-                    color: Colors.white.withOpacity(0.3),
+                  // Ghost icon
+                  Positioned(
+                    right: -20,
+                    top: -20,
+                    child: Icon(
+                      icon,
+                      size: 160,
+                      color: color.withValues(alpha: .07),
+                    ),
                   ),
-                ),
+                  // Bottom fade to background
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, const Color(0xFF0A0A0A)],
+                          stops: const [0.4, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+
           BlocBuilder<BodyPartBloc, BodyPartState>(
             builder: (context, state) {
               if (state is BodyPartLoading) {
@@ -67,6 +122,27 @@ class _BodyPartExercisesPageState extends State<BodyPartExercisesPage> {
                 );
               }
               if (state is BodyPartExercisesLoaded) {
+                if (state.exercises.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: Colors.grey.shade700,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No exercises found for $label',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 return SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final exercise = state.exercises[index];

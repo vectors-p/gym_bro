@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/di/injection_container.dart';
-import '../bloc/equipment_bloc.dart';
-import '../bloc/equipment_event.dart';
-import '../bloc/equipment_state.dart';
-import '../../../exercises/presentation/widgets/exercise_card.dart';
+import 'package:gym_bro/core/di/injection_container.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_bloc.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_event.dart';
+import 'package:gym_bro/features/equipment/presentation/bloc/equipment_state.dart';
+import 'package:gym_bro/features/exercises/presentation/widgets/exercise_card.dart';
 
 class EquipmentExercisesPage extends StatelessWidget {
   final String equipmentType;

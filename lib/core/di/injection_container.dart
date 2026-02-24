@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import '../network/api_client.dart';
+import 'package:gym_bro/core/network/api_client.dart';
 
 // Exercises
 import '../../features/exercises/data/data_providers/exercise_api_provider.dart';

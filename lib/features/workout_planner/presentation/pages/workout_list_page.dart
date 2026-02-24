@@ -24,10 +24,9 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Workouts'), centerTitle: true),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/workouts/create'),
-        icon: const Icon(Icons.add),
-        label: const Text('New Workout'),
+        child: const Icon(Icons.add),
       ),
       body: BlocConsumer<WorkoutBloc, WorkoutState>(
         listener: (context, state) {
@@ -56,10 +55,10 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
                     const SizedBox(height: 16),
                     const Text('No workouts yet'),
                     const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () => context.push('/workouts/create'),
-                      child: const Text('Create your first workout'),
-                    ),
+                    // ElevatedButton(
+                    //   onPressed: () => context.push('/workouts/create'),
+                    //   child: const Text('Create your first workout'),
+                    // ),
                   ],
                 ),
               );

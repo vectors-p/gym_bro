@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../bloc/exercise_bloc.dart';
-import '../bloc/exercise_event.dart';
-import '../bloc/exercise_state.dart';
-import '../widgets/exercise_card.dart';
+import 'package:gym_bro/features/exercises/presentation/bloc/exercise_bloc.dart';
+import 'package:gym_bro/features/exercises/presentation/bloc/exercise_event.dart';
+import 'package:gym_bro/features/exercises/presentation/bloc/exercise_state.dart';
+import 'package:gym_bro/features/exercises/presentation/widgets/exercise_card.dart';
 
 class ExerciseListPage extends StatefulWidget {
   const ExerciseListPage({super.key});

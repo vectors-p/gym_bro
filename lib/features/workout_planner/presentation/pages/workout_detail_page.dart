@@ -137,7 +137,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

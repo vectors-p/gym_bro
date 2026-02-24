@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:stream_transform/stream_transform.dart';
 import '../../../exercises/domain/repositories/exercise_repository.dart';
 import 'search_event.dart';
 import 'search_state.dart';
@@ -9,7 +10,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc({required ExerciseRepository repository})
     : _repository = repository,
       super(SearchInitial()) {
-    on<SearchQueryChanged>(_onQueryChanged);
+    on<SearchQueryChanged>(
+      _onQueryChanged,
+      transformer: (events, mapper) =>
+          events.debounce(const Duration(milliseconds: 500)).switchMap(mapper),
+    );
     on<SearchCleared>(_onCleared);
   }
 
@@ -22,7 +27,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       emit(SearchInitial());
       return;
     }
-
     emit(SearchLoading());
     final result = await _repository.searchExercisesByName(query);
     result.fold(

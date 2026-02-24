@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:gym_bro/core/constatnts/api_constants.dart';
-import '../errors/exceptions.dart';
+import 'package:gym_bro/core/errors/exceptions.dart';
 
 class ApiClient {
   late final Dio _dio;
