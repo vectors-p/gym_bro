@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_bro/features/splash/presentation/pages/splash_screen.dart';
 import '../../features/exercises/domain/entities/exercise.dart';
 import '../../features/exercises/presentation/pages/exercise_detail_page.dart';
 import '../../features/exercises/presentation/pages/exercise_list_page.dart';
@@ -17,6 +18,7 @@ import '../../features/workout_planner/domain/entities/workout.dart';
 
 class AppRouter {
   // Route paths
+  static const String splash = '/splash';
   static const String home = '/';
   static const String exercises = '/exercises';
   static const String exerciseDetail = '/exercises/:id';
@@ -31,8 +33,14 @@ class AppRouter {
   static const String workoutCreate = '/workouts/create';
 
   static final GoRouter router = GoRouter(
-    initialLocation: home,
+    initialLocation: splash,
     routes: [
+      // ── Splash ──────────────────────────────────────────
+      GoRoute(
+        path: splash,
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       // ── Home ──────────────────────────────────────────
       GoRoute(
         path: home,
