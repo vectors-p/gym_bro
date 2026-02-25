@@ -2,30 +2,38 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/workout.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../bloc/workout_bloc.dart';
 import '../bloc/workout_event.dart';
 import '../bloc/workout_state.dart';
 
-class WorkoutDetailPage extends StatefulWidget {
+class WorkoutDetailPage extends StatelessWidget {
   final String workoutId;
   final Workout? workout;
 
   const WorkoutDetailPage({super.key, required this.workoutId, this.workout});
 
   @override
-  State<WorkoutDetailPage> createState() => _WorkoutDetailPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<WorkoutBloc>()..add(LoadWorkoutById(workoutId)),
+      child: _WorkoutDetailView(workoutId: workoutId),
+    );
+  }
 }
 
-class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
-  @override
-  void initState() {
-    super.initState();
-    // Always reload fresh — never trust the stale extra snapshot
-    context.read<WorkoutBloc>().add(LoadWorkoutById(widget.workoutId));
-  }
+class _WorkoutDetailView extends StatefulWidget {
+  final String workoutId;
 
+  const _WorkoutDetailView({required this.workoutId});
+
+  @override
+  State<_WorkoutDetailView> createState() => _WorkoutDetailViewState();
+}
+
+class _WorkoutDetailViewState extends State<_WorkoutDetailView> {
   void _removeExercise(Workout workout, String exerciseId) {
     context.read<WorkoutBloc>().add(
       RemoveExerciseFromWorkout(workoutId: workout.id, exerciseId: exerciseId),
@@ -39,18 +47,22 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
   ) {
     final setsCtrl = TextEditingController(text: ex.sets.toString());
     final repsCtrl = TextEditingController(text: ex.reps.toString());
-    final restCtrl = TextEditingController(text: ex.restSeconds.toString());
+    final weightCtrl = TextEditingController(
+      text: ex.weight != null
+          ? ex.weight!.toStringAsFixed(ex.weight! % 1 == 0 ? 0 : 1)
+          : '',
+    );
     final workoutBloc = context.read<WorkoutBloc>();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => Padding(
+      builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
           top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -87,10 +99,13 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
-                    controller: restCtrl,
-                    keyboardType: TextInputType.number,
+                    controller: weightCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(
-                      labelText: 'Rest (s)',
+                      labelText: 'Weight (kg)',
+                      hintText: 'Optional',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -103,7 +118,10 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                 final updated = ex.copyWith(
                   sets: int.tryParse(setsCtrl.text) ?? ex.sets,
                   reps: int.tryParse(repsCtrl.text) ?? ex.reps,
-                  restSeconds: int.tryParse(restCtrl.text) ?? ex.restSeconds,
+                  weight: weightCtrl.text.isEmpty
+                      ? null
+                      : double.tryParse(weightCtrl.text),
+                  clearWeight: weightCtrl.text.isEmpty,
                 );
                 workoutBloc.add(
                   UpdateExerciseInWorkout(
@@ -111,7 +129,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                     exercise: updated,
                   ),
                 );
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
               },
               child: const Text('Save'),
             ),
@@ -129,7 +147,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Add exercise',
-            onPressed: () => context.push('/exercises'),
+            onPressed: () => context.push('/exercises?workoutId=${workout.id}'),
           ),
         ],
       ),
@@ -170,7 +188,9 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                         const Text('No exercises yet'),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: () => context.push('/exercises'),
+                          onPressed: () => context.push(
+                            '/exercises?workoutId=${workout.id}',
+                          ),
                           child: const Text('Browse Exercises'),
                         ),
                       ],
@@ -183,7 +203,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                     itemBuilder: (context, index) {
                       final ex = workout.exercises[index];
                       return ListTile(
-                        key: ValueKey(ex.exerciseId),
+                        key: ValueKey('${index}_${ex.exerciseId}'),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: CachedNetworkImage(
@@ -198,7 +218,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          '${ex.sets} sets × ${ex.reps} reps  •  ${ex.restSeconds}s rest',
+                          '${ex.sets} sets × ${ex.reps} reps  •  ${ex.weightDisplay}',
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -230,21 +250,21 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<WorkoutBloc, WorkoutState>(
-        builder: (context, state) {
-          if (state is WorkoutLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is WorkoutDetailLoaded) {
-            return _buildDetail(state.workout);
-          }
-          if (state is WorkoutError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
-      ),
+    return BlocBuilder<WorkoutBloc, WorkoutState>(
+      builder: (context, state) {
+        if (state is WorkoutLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (state is WorkoutDetailLoaded) {
+          return _buildDetail(state.workout);
+        }
+        if (state is WorkoutError) {
+          return Scaffold(body: Center(child: Text('Error: ${state.message}')));
+        }
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
     );
   }
 }

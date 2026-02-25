@@ -32,7 +32,6 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
   }
 
   void _onScroll() {
-    // Trigger load more when 200px from the bottom
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final state = context.read<ExerciseBloc>().state;
@@ -47,6 +46,11 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Pick up workoutId if we were navigated here from inside a workout
+    final workoutId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['workoutId'];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Exercises'),
@@ -68,16 +72,13 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
             final exercises = state is ExercisesLoaded
                 ? state.exercises
                 : (state as ExerciseLoadingMore).currentExercises;
-
             final isLoadingMore = state is ExerciseLoadingMore;
 
             return ListView.builder(
               controller: _scrollController,
-              // +1 for the bottom loading indicator
               itemCount: exercises.length + (isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == exercises.length) {
-                  // Pagination spinner at the bottom
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Center(child: CircularProgressIndicator()),
@@ -87,7 +88,8 @@ class _ExerciseListPageState extends State<ExerciseListPage> {
                 return ExerciseCard(
                   exercise: exercise,
                   onTap: () => context.push(
-                    '/exercises/${exercise.id}',
+                    // Forward workoutId so detail page knows the context
+                    '/exercises/${exercise.id}${workoutId != null ? '?workoutId=$workoutId' : ''}',
                     extra: exercise,
                   ),
                 );

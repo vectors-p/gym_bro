@@ -19,11 +19,7 @@ class Workout extends Equatable {
   int get totalSets => exercises.fold(0, (sum, e) => sum + e.sets);
 
   int get estimatedMinutes =>
-      exercises.fold(
-        0,
-        (sum, e) => sum + (e.sets * (e.reps * 3 + e.restSeconds)),
-      ) ~/
-      60;
+      exercises.fold(0, (sum, e) => sum + (e.sets * (e.reps * 3 + 60))) ~/ 60;
 
   Workout copyWith({
     String? name,

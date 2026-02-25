@@ -17,7 +17,6 @@ import '../../features/workout_planner/presentation/pages/workout_create_page.da
 import '../../features/workout_planner/domain/entities/workout.dart';
 
 class AppRouter {
-  // Route paths
   static const String splash = '/splash';
   static const String home = '/';
   static const String exercises = '/exercises';
@@ -35,13 +34,11 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: splash,
     routes: [
-      // ── Splash ──────────────────────────────────────────
       GoRoute(
         path: splash,
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      // ── Home ──────────────────────────────────────────
       GoRoute(
         path: home,
         name: 'home',
@@ -60,7 +57,12 @@ class AppRouter {
             builder: (context, state) {
               final id = state.pathParameters['id']!;
               final exercise = state.extra as Exercise?;
-              return ExerciseDetailPage(exerciseId: id, exercise: exercise);
+              final workoutId = state.uri.queryParameters['workoutId'];
+              return ExerciseDetailPage(
+                exerciseId: id,
+                exercise: exercise,
+                workoutId: workoutId, // ← passed through
+              );
             },
           ),
         ],

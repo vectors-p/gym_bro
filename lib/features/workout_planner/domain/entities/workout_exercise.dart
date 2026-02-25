@@ -1,26 +1,30 @@
-// rename imageUrl back to gifUrl to stay consistent with Exercise entity
 import 'package:equatable/equatable.dart';
 
 class WorkoutExercise extends Equatable {
   final String exerciseId;
   final String exerciseName;
-  final String gifUrl; // ✅ back to gifUrl
+  final String gifUrl;
   final String targetMuscle;
   final int sets;
   final int reps;
-  final int restSeconds;
+  final double? weight; // nullable — bodyweight exercises have no weight
 
   const WorkoutExercise({
     required this.exerciseId,
     required this.exerciseName,
-    required this.gifUrl, // ✅
+    required this.gifUrl,
     required this.targetMuscle,
     required this.sets,
     required this.reps,
-    required this.restSeconds,
+    this.weight,
   });
 
-  WorkoutExercise copyWith({int? sets, int? reps, int? restSeconds}) {
+  WorkoutExercise copyWith({
+    int? sets,
+    int? reps,
+    double? weight,
+    bool clearWeight = false,
+  }) {
     return WorkoutExercise(
       exerciseId: exerciseId,
       exerciseName: exerciseName,
@@ -28,9 +32,13 @@ class WorkoutExercise extends Equatable {
       targetMuscle: targetMuscle,
       sets: sets ?? this.sets,
       reps: reps ?? this.reps,
-      restSeconds: restSeconds ?? this.restSeconds,
+      weight: clearWeight ? null : (weight ?? this.weight),
     );
   }
+
+  String get weightDisplay => weight != null
+      ? '${weight!.toStringAsFixed(weight! % 1 == 0 ? 0 : 1)} kg'
+      : 'Bodyweight';
 
   @override
   List<Object?> get props => [
@@ -40,6 +48,6 @@ class WorkoutExercise extends Equatable {
     targetMuscle,
     sets,
     reps,
-    restSeconds,
+    weight,
   ];
 }

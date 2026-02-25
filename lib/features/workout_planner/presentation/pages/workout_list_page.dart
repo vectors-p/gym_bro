@@ -41,6 +41,7 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
           if (state is WorkoutLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (state is WorkoutsLoaded) {
             if (state.workouts.isEmpty) {
               return Center(
@@ -55,10 +56,6 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
                     const SizedBox(height: 16),
                     const Text('No workouts yet'),
                     const SizedBox(height: 8),
-                    // ElevatedButton(
-                    //   onPressed: () => context.push('/workouts/create'),
-                    //   child: const Text('Create your first workout'),
-                    // ),
                   ],
                 ),
               );
@@ -79,9 +76,11 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
               },
             );
           }
+
           if (state is WorkoutError) {
             return Center(child: Text('Error: ${state.message}'));
           }
+
           return const SizedBox.shrink();
         },
       ),

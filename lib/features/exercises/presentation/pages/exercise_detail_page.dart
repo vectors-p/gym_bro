@@ -14,11 +14,13 @@ import '../../../workout_planner/presentation/bloc/workout_state.dart';
 class ExerciseDetailPage extends StatefulWidget {
   final String exerciseId;
   final Exercise? exercise;
+  final String? workoutId; // ← passed when navigating from inside a workout
 
   const ExerciseDetailPage({
     super.key,
     required this.exerciseId,
     this.exercise,
+    this.workoutId,
   });
 
   @override
@@ -34,9 +36,11 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     }
   }
 
+  // ── Used when coming from outside a workout ──────────────
   void _showAddToWorkoutSheet(BuildContext context, Exercise exercise) {
-    // Load workouts before showing sheet
-    context.read<WorkoutBloc>().add(const LoadAllWorkouts());
+    final router = GoRouter.of(context);
+    final workoutBloc = context.read<WorkoutBloc>();
+    workoutBloc.add(const LoadAllWorkouts());
 
     showModalBottomSheet(
       context: context,
@@ -45,7 +49,8 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => BlocBuilder<WorkoutBloc, WorkoutState>(
-        builder: (context, state) {
+        bloc: workoutBloc,
+        builder: (_, state) {
           if (state is WorkoutLoading) {
             return const SizedBox(
               height: 200,
@@ -70,7 +75,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        context.push('/workouts/create');
+                        router.push('/workouts/create');
                       },
                       child: const Text('Create a Workout'),
                     ),
@@ -104,7 +109,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                     child: ListView.builder(
                       controller: scrollCtrl,
                       itemCount: state.workouts.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (listContext, index) {
                         final workout = state.workouts[index];
                         return ListTile(
                           leading: const CircleAvatar(
@@ -115,34 +120,15 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                             '${workout.exercises.length} exercises',
                           ),
                           onTap: () {
-                            final router = GoRouter.of(
-                              context,
-                            ); // ← capture before dismissing
-                            context.read<WorkoutBloc>().add(
-                              AddExerciseToWorkout(
-                                workoutId: workout.id,
-                                exercise: WorkoutExercise(
-                                  exerciseId: exercise.id,
-                                  exerciseName: exercise.name,
-                                  gifUrl: exercise.gifUrl,
-                                  targetMuscle: exercise.primaryTarget,
-                                  sets: 3,
-                                  reps: 12,
-                                  restSeconds: 60,
-                                ),
-                              ),
-                            );
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Added to ${workout.name}'),
-                                action: SnackBarAction(
-                                  label: 'View',
-                                  onPressed: () {
-                                    router.push('/workouts/${workout.id}');
-                                  },
-                                ),
-                              ),
+                            _showExerciseConfigSheet(
+                              context,
+                              exercise,
+                              workout.id,
+                              workout.name,
+                              workoutBloc,
+                              router,
+                              fromInsideWorkout: false,
                             );
                           },
                         );
@@ -159,11 +145,153 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     );
   }
 
+  // ── Config sheet: sets / reps / weight ───────────────────
+  void _showExerciseConfigSheet(
+    BuildContext context,
+    Exercise exercise,
+    String workoutId,
+    String workoutName,
+    WorkoutBloc workoutBloc,
+    GoRouter router, {
+    bool fromInsideWorkout = false,
+  }) {
+    final setsCtrl = TextEditingController(text: '3');
+    final repsCtrl = TextEditingController(text: '12');
+    final weightCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              exercise.name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (workoutName.isNotEmpty)
+              Text(
+                'Adding to $workoutName',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: setsCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Sets',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: repsCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Reps',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: weightCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Weight (kg)',
+                      hintText: 'Optional',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                final sets = int.tryParse(setsCtrl.text) ?? 3;
+                final reps = int.tryParse(repsCtrl.text) ?? 12;
+                final weight = double.tryParse(weightCtrl.text);
+
+                workoutBloc.add(
+                  AddExerciseToWorkout(
+                    workoutId: workoutId,
+                    exercise: WorkoutExercise(
+                      exerciseId: exercise.id,
+                      exerciseName: exercise.name,
+                      gifUrl: exercise.gifUrl,
+                      targetMuscle: exercise.primaryTarget,
+                      sets: sets,
+                      reps: reps,
+                      weight: weight,
+                    ),
+                  ),
+                );
+                Navigator.pop(sheetContext);
+
+                if (fromInsideWorkout) {
+                  // Just pop back to workout detail
+                  router.pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Added to $workoutName'),
+                      action: SnackBarAction(
+                        label: 'View',
+                        onPressed: () {
+                          router.go('/');
+                          router.push('/workouts');
+                          router.push('/workouts/$workoutId');
+                        },
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Add to Workout'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody(Exercise exercise) {
+    final fromInsideWorkout = widget.workoutId != null;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Animated header with the exercise GIF
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
@@ -190,14 +318,12 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
               ),
             ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Metadata chips
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -216,8 +342,6 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                       ),
                     ],
                   ),
-
-                  // Secondary muscles
                   if (exercise.secondaryMuscles.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     const Text(
@@ -243,15 +367,12 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                           .toList(),
                     ),
                   ],
-
-                  // Instructions
                   const SizedBox(height: 20),
                   const Text(
                     'How to Perform',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-
                   ...exercise.instructions.asMap().entries.map(
                     (entry) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -282,8 +403,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 80), // FAB clearance
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -291,7 +411,22 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddToWorkoutSheet(context, exercise),
+        onPressed: () {
+          if (fromInsideWorkout) {
+            // Skip workout picker — go straight to config sheet
+            _showExerciseConfigSheet(
+              context,
+              exercise,
+              widget.workoutId!,
+              '',
+              context.read<WorkoutBloc>(),
+              GoRouter.of(context),
+              fromInsideWorkout: true,
+            );
+          } else {
+            _showAddToWorkoutSheet(context, exercise);
+          }
+        },
         icon: const Icon(Icons.playlist_add),
         label: const Text('Add to Workout'),
       ),
@@ -300,7 +435,6 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    // If exercise passed via GoRouter extra — render immediately
     if (widget.exercise != null) return _buildBody(widget.exercise!);
 
     return Scaffold(

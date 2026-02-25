@@ -8,7 +8,7 @@ class WorkoutExerciseModel extends WorkoutExercise {
     required super.targetMuscle,
     required super.sets,
     required super.reps,
-    required super.restSeconds,
+    super.weight,
   });
 
   factory WorkoutExerciseModel.fromJson(Map<String, dynamic> json) {
@@ -19,7 +19,7 @@ class WorkoutExerciseModel extends WorkoutExercise {
       targetMuscle: json['targetMuscle'] as String,
       sets: json['sets'] as int,
       reps: json['reps'] as int,
-      restSeconds: json['restSeconds'] as int,
+      weight: (json['weight'] as num?)?.toDouble(),
     );
   }
 
@@ -30,7 +30,7 @@ class WorkoutExerciseModel extends WorkoutExercise {
     'targetMuscle': targetMuscle,
     'sets': sets,
     'reps': reps,
-    'restSeconds': restSeconds,
+    'weight': weight,
   };
 
   factory WorkoutExerciseModel.fromEntity(WorkoutExercise entity) {
@@ -41,7 +41,7 @@ class WorkoutExerciseModel extends WorkoutExercise {
       targetMuscle: entity.targetMuscle,
       sets: entity.sets,
       reps: entity.reps,
-      restSeconds: entity.restSeconds,
+      weight: entity.weight,
     );
   }
 }
